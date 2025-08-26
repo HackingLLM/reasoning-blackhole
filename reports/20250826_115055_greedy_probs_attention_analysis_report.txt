@@ -1,0 +1,50 @@
+============================================================
+Attention Pattern Analysis Report
+============================================================
+
+0. ATTENTION MASK INFORMATION
+----------------------------------------
+Detected sliding window size: 128
+Layer window sizes: [np.int64(128), np.int64(467), np.int64(128), np.int64(467), np.int64(128)]...
+
+1. ENTROPY ANALYSIS
+----------------------------------------
+Average entropy drop in loop: -0.0254
+Layer with maximum entropy drop: Layer 4
+  Pre-loop entropy: 0.0355
+  Loop entropy: 0.0095
+
+2. ATTENTION PATTERNS
+----------------------------------------
+Average self-attention: 0.5654
+Average backward attention: 0.0019
+Average loop region attention: 0.0028
+
+3. LOOP PATTERN DETECTION
+----------------------------------------
+Found 1717 similar attention patterns
+Loop patterns by layer:
+  Layer 1: 442 patterns
+  Layer 3: 75 patterns
+  Layer 7: 1 patterns
+  Layer 9: 332 patterns
+  Layer 10: 7 patterns
+  Layer 11: 154 patterns
+  Layer 13: 124 patterns
+  Layer 15: 25 patterns
+  Layer 17: 110 patterns
+  Layer 19: 111 patterns
+  Layer 21: 210 patterns
+  Layer 23: 126 patterns
+
+4. LAYER SPECIALIZATION
+----------------------------------------
+Layers with local focus: [0, 2, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 22]
+Layers with global focus: []
+
+5. KEY FINDINGS AND RECOMMENDATIONS
+----------------------------------------
+⚠️ Many similar attention patterns found
+   → Strong indication of repetitive processing
+
+============================================================

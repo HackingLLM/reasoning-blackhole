@@ -1,0 +1,78 @@
+From d78c41e59aa44c4059385afc5834b5e32459bc3d Mon Sep 17 00:00:00 2001
+From: wb <1245345458@qq.com>
+Date: Tue, 26 Aug 2025 13:30:02 +0000
+Subject: [PATCH] record attn scores before softmax
+
+---
+ .../models/gpt_oss/modeling_gpt_oss.py        | 48 +++++++++++++++++--
+ 1 file changed, 45 insertions(+), 3 deletions(-)
+
+diff --git a/src/transformers/models/gpt_oss/modeling_gpt_oss.py b/src/transformers/models/gpt_oss/modeling_gpt_oss.py
+index 2077f7372c..c50de23053 100644
+--- a/src/transformers/models/gpt_oss/modeling_gpt_oss.py
++++ b/src/transformers/models/gpt_oss/modeling_gpt_oss.py
+@@ -306,9 +306,10 @@ class GptOssAttention(nn.Module):
+             cache_kwargs = {"cache_position": cache_position}
+             key_states, value_states = past_key_value.update(key_states, value_states, self.layer_idx, cache_kwargs)
+ 
+-        attention_interface: Callable = eager_attention_forward
+-        if self.config._attn_implementation != "eager":
+-            attention_interface = ALL_ATTENTION_FUNCTIONS[self.config._attn_implementation]
++        # attention_interface: Callable = eager_attention_forward
++        # if self.config._attn_implementation != "eager":
++        #     attention_interface = ALL_ATTENTION_FUNCTIONS[self.config._attn_implementation]
++        attention_interface = self.eager_attention_forward
+ 
+         attn_output, attn_weights = attention_interface(
+             self,
+@@ -328,6 +329,47 @@ class GptOssAttention(nn.Module):
+         return attn_output, attn_weights
+ 
+ 
++
++    def eager_attention_forward(
++        self,
++        query: torch.Tensor,
++        key: torch.Tensor,
++        value: torch.Tensor,
++        attention_mask: Optional[torch.Tensor],
++        scaling: float,
++        dropout: float = 0.0,
++        **kwargs,
++    ):
++        key_states = repeat_kv(key, self.num_key_value_groups)
++        value_states = repeat_kv(value, self.num_key_value_groups)
++        attn_weights = torch.matmul(query, key_states.transpose(2, 3)) * scaling
++        # print("attn_weights.shape", attn_weights.shape)
++        # print("query.shape", query.shape)
++        # print("key_states.shape", key_states.shape)
++        # q: [batch, head_num, len, head_dim]
++        # k: [batch, head_num, total_len, head_dim]
++        # attn_weights: [batch, head_num, len, total_len]
++        if attention_mask is not None:
++            causal_mask = attention_mask[:, :, :, : key_states.shape[-2]]
++            attn_weights = attn_weights + causal_mask
++
++        self.sum_score = attn_weights.sum(dim=(0,1))
++
++        sinks = self.sinks.reshape(1, -1, 1, 1).expand(query.shape[0], -1, query.shape[-2], -1)
++        combined_logits = torch.cat([attn_weights, sinks], dim=-1)
++
++        # This was not in the original implementation and slightly affect results; it prevents overflow in BF16/FP16
++        # when training with bsz>1 we clamp max values.
++
++        combined_logits = combined_logits - combined_logits.max(dim=-1, keepdim=True).values
++        probs = F.softmax(combined_logits, dim=-1, dtype=combined_logits.dtype)
++        scores = probs[..., :-1]  # we drop the sink here
++        attn_weights = nn.functional.dropout(scores, p=dropout, training=self.training)
++        attn_output = torch.matmul(attn_weights, value_states)
++        attn_output = attn_output.transpose(1, 2).contiguous()
++        return attn_output, attn_weights
++
++
+ class GptOssDecoderLayer(GradientCheckpointingLayer):
+     def __init__(self, config: GptOssConfig, layer_idx: int):
+         super().__init__()
+-- 
+2.43.0
+
