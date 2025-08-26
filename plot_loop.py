@@ -496,7 +496,7 @@ if __name__ == "__main__":
     output_id = data["output_id"]
     
     plot_probability_trends(token_list, prob_list, output_id)
-    # plot_loop_heatmap(token_list, prob_list, output_id)
-    # plot_loop_probability_trend(token_list, prob_list, output_id)
+    plot_loop_heatmap(token_list, prob_list, output_id)
+    plot_loop_probability_trend(token_list, prob_list, output_id)
     
     print_statistics(prob_list, token_list)
