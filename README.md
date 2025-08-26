@@ -44,7 +44,7 @@ Remember to modify the paths below.
 
 ```bash
 # run greedy for token probs and attn scores
-python auto_regressive.py --model_path /path/to/model --max_new_tokens 384 --use_simple_sampler --dump_json --save_attn_score_path tensors/attn_scores.pt
+python auto_regressive.py --model_path /path/to/model --max_new_tokens 384 --dump_json --save_attn_score_path tensors/attn_scores.pt
 
 # analyse probs
 python plot_loop.py --json_path /path/to/json/file

@@ -202,7 +202,7 @@ def plot_probability_trends(token_list, prob_list, output_id="", save_fig=True, 
     plt.tight_layout()
     
     if save_fig:
-        fig_path = f"figs/{output_id}_prob_analysis.png"
+        fig_path = f"figs/prob_analysis.png"
         plt.savefig(fig_path, dpi=300, bbox_inches='tight')
         print(f"PNG figure saved to: {fig_path}")
         fig_path = fig_path.replace("png", "pdf")
@@ -346,7 +346,7 @@ def plot_loop_heatmap(token_list, prob_list, output_id="", save_fig=True, figsiz
     plt.tight_layout()
     
     if save_fig:
-        fig_path = f"figs/{output_id}_loop_heatmap.png"
+        fig_path = f"figs/loop_heatmap.png"
         plt.savefig(fig_path, dpi=300, bbox_inches='tight')
         print(f"\nPNG figure saved to: {fig_path}")
         fig_path = fig_path.replace("png", "pdf")
@@ -456,7 +456,7 @@ def plot_loop_probability_trend(token_list, prob_list, output_id="", save_fig=Tr
     plt.tight_layout()
     
     if save_fig:
-        fig_path = f"figs/{output_id}_loop_prob_trend.png"
+        fig_path = f"figs/loop_prob_trend.png"
         plt.savefig(fig_path, dpi=300, bbox_inches='tight')
         print(f"\nPNG figure saved to: {fig_path}")
         fig_path = fig_path.replace("png", "pdf")
@@ -486,7 +486,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--json_path", type=str, required=True)
 
-    args = parser.parse_args()·
+    args = parser.parse_args()
     
     file_name = args.json_path
     with open(file_name, 'r', encoding='utf-8') as f:

@@ -13,35 +13,6 @@ def load_model(model_path):
     return tokenizer, model
 
 
-def generate_text(tokenizer, model, prompts, max_new_tokens=96):
-    inputs = tokenizer(
-        prompts,
-        return_tensors="pt",
-        padding=True,
-        truncation=True,
-        return_attention_mask=True
-    ).to(model.device)
-    
-    outputs = model.generate(
-        **inputs, 
-        max_new_tokens=max_new_tokens,
-        do_sample=False,
-    )
-    
-    results = []
-    for i, output in enumerate(outputs):
-        generated_text = tokenizer.decode(
-            output[inputs["input_ids"].shape[-1]:], 
-            skip_special_tokens=False
-        )
-        results.append({
-            'prompt': prompts[i],
-            'generated': generated_text
-        })
-    
-    return results
-
-
 def run_model_and_sample(tokenizer, model, prompts, max_new_tokens=96, temperature=1.0, top_k=None, top_p=None, start_record_index=0, timestamp=None):
     inputs = tokenizer(
         prompts,

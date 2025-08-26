@@ -315,9 +315,9 @@ def plot_entropy_drop(attention_scores, loop_start_idx, output_id="", save_fig=T
 
     plt.show()
 
-
+    
 def plot_attention_heatmaps(attention_scores, loop_start_idx, output_id="", 
-                           layers_to_plot=None, save_fig=True, figsize=(18, 6),
+                           layers_to_plot=None, save_fig=True, figsize=(12, 6),
                            apply_softmax_transform=False, temperature=1.0):
     font_family = setup_font_and_style()
     print(f"Using font: {font_family}")
@@ -330,7 +330,7 @@ def plot_attention_heatmaps(attention_scores, loop_start_idx, output_id="",
     seq_len = attention_scores.shape[1]
     
     if layers_to_plot is None:
-        layers_to_plot = [0, num_layers//2, num_layers-1]
+        layers_to_plot = [num_layers//2, num_layers-1]
     
     fig, axes = plt.subplots(1, len(layers_to_plot), figsize=figsize)
     if len(layers_to_plot) == 1:
@@ -341,7 +341,9 @@ def plot_attention_heatmaps(attention_scores, loop_start_idx, output_id="",
     for idx, (ax, layer_idx) in enumerate(zip(axes, layers_to_plot)):
         attn_subset = attention_scores[layer_idx][display_start:, display_start:]
         
-        im = ax.imshow(attn_subset, cmap='hot', aspect='auto', interpolation='nearest')
+        # Changed to 'RdYlGn_r' for green-low-to-red-high colormap
+        # The '_r' reverses the colormap so green is low and red is high
+        im = ax.imshow(attn_subset, cmap='RdYlGn_r', aspect='auto', interpolation='nearest')
         
         ax.set_title(f'Layer {layer_idx} Attention\n(Last 100 tokens)', 
                     fontsize=16, fontweight='bold', pad=10)
@@ -385,12 +387,11 @@ def plot_attention_heatmaps(attention_scores, loop_start_idx, output_id="",
         print(f"Figure saved to: {fig_path}")
     plt.show()
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Plot individual attention analysis figures")
     parser.add_argument("--attn_score_path", type=str, required=True,
                        help="Path to attention scores file")
-    parser.add_argument("--loop_start_idx", type=int, required=True,
+    parser.add_argument("--loop_start_idx", type=int, default=0,
                        help="Index where the loop starts")
     parser.add_argument("--output_id", type=str, default="output",
                        help="Output identifier for file names")
@@ -410,20 +411,20 @@ if __name__ == "__main__":
     
     apply_softmax_flag = args.is_pre_softmax
     
-    if args.plot_type == 'entropy_comp' or args.plot_type == 'all':
-        plot_entropy_comparison(attention_scores, args.loop_start_idx, args.output_id,
-                               apply_softmax_transform=apply_softmax_flag,
-                               temperature=args.temperature)
+    # if args.plot_type == 'entropy_comp' or args.plot_type == 'all':
+    #     plot_entropy_comparison(attention_scores, args.loop_start_idx, args.output_id,
+    #                            apply_softmax_transform=apply_softmax_flag,
+    #                            temperature=args.temperature)
     
-    if args.plot_type == 'patterns' or args.plot_type == 'all':
-        plot_attention_patterns(attention_scores, args.loop_start_idx, args.output_id,
-                               apply_softmax_transform=apply_softmax_flag,
-                               temperature=args.temperature)
+    # if args.plot_type == 'patterns' or args.plot_type == 'all':
+    #     plot_attention_patterns(attention_scores, args.loop_start_idx, args.output_id,
+    #                            apply_softmax_transform=apply_softmax_flag,
+    #                            temperature=args.temperature)
     
-    if args.plot_type == 'entropy_drop' or args.plot_type == 'all':
-        plot_entropy_drop(attention_scores, args.loop_start_idx, args.output_id,
-                         apply_softmax_transform=apply_softmax_flag,
-                         temperature=args.temperature)
+    # if args.plot_type == 'entropy_drop' or args.plot_type == 'all':
+    #     plot_entropy_drop(attention_scores, args.loop_start_idx, args.output_id,
+    #                      apply_softmax_transform=apply_softmax_flag,
+    #                      temperature=args.temperature)
     
     if args.plot_type == 'heatmaps' or args.plot_type == 'all':
         plot_attention_heatmaps(attention_scores, args.loop_start_idx, args.output_id,
